@@ -1,41 +1,46 @@
 from dataclasses import dataclass
 from tokens import Token
+import typing
+
 
 @dataclass
 class Expr:
-	pass
+    pass
 
-	def accept(self, visitor):
-		raise NotImplemented
+    def accept(self, visitor):
+        raise NotImplemented
+
 
 @dataclass
 class Binary(Expr):
-	left: Expr
-	operator: Token
-	right: Expr
+    left: Expr
+    operator: Token
+    right: Expr
 
-	def accept(self, visitor):
-		return visitor.visit_binary_expr(self)
+    def accept(self, visitor):
+        return visitor.visit_binary_expr(self)
+
 
 @dataclass
 class Grouping(Expr):
-	expression: Expr
+    expression: Expr
 
-	def accept(self, visitor):
-		return visitor.visit_grouping_expr(self)
+    def accept(self, visitor):
+        return visitor.visit_grouping_expr(self)
+
 
 @dataclass
 class Literal(Expr):
-	value: 'typing.Any'
+    value: typing.Any
 
-	def accept(self, visitor):
-		return visitor.visit_literal_expr(self)
+    def accept(self, visitor):
+        return visitor.visit_literal_expr(self)
+
 
 @dataclass
 class Unary(Expr):
-	operator: Token
-	right: Expr
+    operator: Token
+    right: Expr
 
-	def accept(self, visitor):
-		return visitor.visit_unary_expr(self)
-
+    def accept(self, visitor):
+        return visitor.visit_unary_expr(self)
