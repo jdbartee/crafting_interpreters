@@ -42,11 +42,23 @@ class Interpreter:
         self.evaluate(stmt.expression)
         return None
 
+    def visit_if_stmt(self, stmt: Stmt.If):
+        if self.is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.then_branch)
+        elif stmt.else_branch is not None:
+            self.execute(stmt.else_branch)
+        return None
+
     def visit_var_stmt(self, stmt: Stmt.Var):
         value = None
         if stmt.initializer is not None:
             value = self.evaluate(stmt.initializer)
         self.environment.define(stmt.name, value)
+
+    def visit_while_stmt(self, stmt: Stmt.While):
+        while self.is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.body)
+        return None
 
     def visit_binary_expr(self, expr: Expr.Binary):
         left = self.evaluate(expr.left)
@@ -111,6 +123,18 @@ class Interpreter:
 
     def visit_variable_expr(self, expr: Expr.Variable):
         return self.environment.get(expr.name)
+
+    def visit_logical_expr(self, expr: Expr.Logical):
+        left = self.evaluate(expr.left)
+
+        if expr.operator.token_type == tokens.OR:
+            if self.is_truthy(left):
+                return left
+        else:
+            if not self.is_truthy(left):
+                return left
+
+        return self.evaluate(expr.right)
 
     def is_truthy(self, value):
         return value is not None and value is not False
