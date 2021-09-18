@@ -3,10 +3,7 @@ from tokens import Token
 import typing
 
 
-@dataclass
 class Expr:
-    pass
-
     def accept(self, visitor):
         raise NotImplemented
 

@@ -2,6 +2,7 @@ import sys
 
 from scanner import Scanner
 from parser import Parser
+from interpreter import Interpreter
 from ast_printer import AstPrinter
 import tokens
 
@@ -10,7 +11,9 @@ class Lox():
 
     def __init__(self):
         self.had_error = False
+        self.had_runtime_error = False
         self.ast_printer = AstPrinter()
+        self.interpreter = Interpreter(self.runtime_error)
 
     def main(self, args):
         if len(args) > 1:
@@ -26,25 +29,28 @@ class Lox():
         self.run(data)
         if self.had_error:
             sys.exit(65)
+        if self.had_runtime_error:
+            sys.exit(70)
 
     def run_prompt(self):
         while True:
             data = input("> ")
             self.run(data)
             self.had_error = False
+            self.hod_runtime_error = False
 
     def run(self, data):
         scanner = Scanner(data, self.lexer_error)
         tokens = scanner.scan_tokens()
 
-        if self.had_error: return
+        if self.had_error:
+            return
         parser = Parser(tokens, self.parser_error)
         expression = parser.parse()
 
-        if self.had_error: return
-        print(self.ast_printer.to_string(expression))
-
-
+        if self.had_error:
+            return
+        self.interpreter.interpret(expression)
 
     def lexer_error(self, line, message):
         self.report(line, "", message)
@@ -54,6 +60,10 @@ class Lox():
             self.report(token.line, "at end", message)
         else:
             self.report(token.line, " at '" + token.lexeme + "' ", message)
+
+    def runtime_error(self, error):
+        print(f"{error.message}\n[line {error.token.line}]")
+        self.had_runtime_error = True
 
     def report(self, line, where, message):
         print("[line {}] Error{}: {}".format(line, where, message))
