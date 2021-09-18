@@ -24,6 +24,6 @@ class Environment:
             return value
 
         if self.parent is not None:
-            return self.parent.assign(value)
+            return self.parent.assign(name, value)
 
         raise LoxRuntimeError(name, f"Undefined Variable '{name.lexeme}'.")

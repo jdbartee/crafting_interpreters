@@ -59,3 +59,9 @@ class Assign(Expr):
 
     def accept(self, visitor):
         return visitor.visit_assign_expr(self)
+
+
+@dataclass
+class Logical(Binary):
+    def accept(self, visitor):
+        return visitor.visit_logical_expr(self)
