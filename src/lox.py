@@ -1,12 +1,16 @@
 import sys
 
 from scanner import Scanner
+from parser import Parser
+from ast_printer import AstPrinter
+import tokens
 
 
 class Lox():
 
     def __init__(self):
         self.had_error = False
+        self.ast_printer = AstPrinter()
 
     def main(self, args):
         if len(args) > 1:
@@ -30,14 +34,26 @@ class Lox():
             self.had_error = False
 
     def run(self, data):
-        scanner = Scanner(data, self.error)
+        scanner = Scanner(data, self.lexer_error)
         tokens = scanner.scan_tokens()
 
-        for token in tokens:
-            print(token)
+        if self.had_error: return
+        parser = Parser(tokens, self.parser_error)
+        expression = parser.parse()
 
-    def error(self, line, message):
+        if self.had_error: return
+        print(self.ast_printer.to_string(expression))
+
+
+
+    def lexer_error(self, line, message):
         self.report(line, "", message)
+
+    def parser_error(self, token, message):
+        if token.token_type == tokens.EOF:
+            self.report(token.line, "at end", message)
+        else:
+            self.report(token.line, " at '" + token.lexeme + "' ", message)
 
     def report(self, line, where, message):
         print("[line {}] Error{}: {}".format(line, where, message))
