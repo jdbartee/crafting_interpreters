@@ -16,7 +16,7 @@ class AstPrinter:
         return s
 
     def visit_binary_expr(self, expr: Binary):
-        return self.sexp(expr.operator.literal, expr.left, expr.right)
+        return self.sexp(expr.operator.lexeme, expr.left, expr.right)
 
     def visit_grouping_expr(self, expr: Grouping):
         return self.sexp("group", expr.expression)
@@ -25,7 +25,7 @@ class AstPrinter:
         return str(expr.value)
 
     def visit_unary_expr(self, expr: Unary):
-        return self.sexp(expr.operator.literal, expr.right)
+        return self.sexp(expr.operator.lexeme, expr.right)
 
 
 if __name__ == "__main__":
