@@ -1,8 +1,7 @@
 import tokens
 
 
-class Scanner():
-
+class Scanner:
     def __init__(self, source, error):
         self.had_error = False
         self.source = source
@@ -22,7 +21,7 @@ class Scanner():
             "if": tokens.IF,
             "nil": tokens.NIL,
             "or": tokens.OR,
-            "print": tokens.PRINT,
+            # "print": tokens.PRINT,
             "return": tokens.RETURN,
             "super": tokens.SUPER,
             "this": tokens.THIS,

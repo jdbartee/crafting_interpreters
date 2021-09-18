@@ -65,3 +65,13 @@ class Assign(Expr):
 class Logical(Binary):
     def accept(self, visitor):
         return visitor.visit_logical_expr(self)
+
+
+@dataclass
+class Call(Expr):
+    callee: Expr
+    paren: Token
+    arguments: [Expr]
+
+    def accept(self, visitor):
+        return visitor.visit_call_expr(self)
