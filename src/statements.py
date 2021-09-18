@@ -53,9 +53,28 @@ class If(Stmt):
 
 
 @dataclass
-class While(Expr):
+class While(Stmt):
     condition: Expr
     body: Stmt
 
     def accept(self, visitor):
         return visitor.visit_while_stmt(self)
+
+
+@dataclass
+class Function(Stmt):
+    name: tokens.Token
+    params: [tokens.Token]
+    body: [Stmt]
+
+    def accept(self, visitor):
+        return visitor.visit_function_stmt(self)
+
+
+@dataclass
+class Return(Stmt):
+    keyword: tokens.Token
+    value: Expr
+
+    def accept(self, visitor):
+        return visitor.visit_return_stmt(self)

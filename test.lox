@@ -1,8 +1,25 @@
-var a = 0;
-var temp;
+var start = clock();
 
-for (var b = 1; a < 10000; b = temp + b) {
-    print a;
-    temp = a;
-    a = b;
+fun fib(n) {
+    if (n < 0) {
+        return -1;
+    }
+    fun _fib(_n, _a, _b) {
+        if (_n == 0) {
+            return _a;
+        }
+        if (_n == 1) {
+            return _b;
+        }
+        return _fib(_n - 1, _b, _a + _b);
+    }
+    return _fib(n, 0, 1);
 }
+
+print(fib(121));
+
+var end = clock();
+print(end - start);
+
+print(clock);
+print(fib);
