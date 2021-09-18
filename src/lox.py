@@ -6,8 +6,7 @@ from interpreter import Interpreter
 from ast_printer import AstPrinter
 import tokens
 
-
-class Lox():
+class Lox:
 
     def __init__(self):
         self.had_error = False
@@ -46,11 +45,11 @@ class Lox():
         if self.had_error:
             return
         parser = Parser(tokens, self.parser_error)
-        expression = parser.parse()
+        statements = parser.parse()
 
         if self.had_error:
             return
-        self.interpreter.interpret(expression)
+        self.interpreter.interpret(statements)
 
     def lexer_error(self, line, message):
         self.report(line, "", message)

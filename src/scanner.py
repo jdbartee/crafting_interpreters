@@ -1,5 +1,6 @@
 import tokens
 
+
 class Scanner():
 
     def __init__(self, source, error):
@@ -41,18 +42,30 @@ class Scanner():
 
     def scan_token(self):
         c = self.advance()
-        if False: pass
-        elif c == "(": self.add_token(tokens.LEFT_PAREN, None)
-        elif c == ")": self.add_token(tokens.RIGHT_PAREN, None)
-        elif c == "{": self.add_token(tokens.LEFT_BRACE, None)
-        elif c == "}": self.add_token(tokens.RIGHT_BRACE, None)
-        elif c == ",": self.add_token(tokens.COMMA, None)
-        elif c == ".": self.add_token(tokens.DOT, None)
-        elif c == "-": self.add_token(tokens.MINUS, None)
-        elif c == "+": self.add_token(tokens.PLUS, None)
-        elif c == ":": self.add_token(tokens.COLON, None)
-        elif c == ";": self.add_token(tokens.SEMICOLON, None)
-        elif c == "*": self.add_token(tokens.STAR, None)
+        if False:
+            pass
+        elif c == "(":
+            self.add_token(tokens.LEFT_PAREN, None)
+        elif c == ")":
+            self.add_token(tokens.RIGHT_PAREN, None)
+        elif c == "{":
+            self.add_token(tokens.LEFT_BRACE, None)
+        elif c == "}":
+            self.add_token(tokens.RIGHT_BRACE, None)
+        elif c == ",":
+            self.add_token(tokens.COMMA, None)
+        elif c == ".":
+            self.add_token(tokens.DOT, None)
+        elif c == "-":
+            self.add_token(tokens.MINUS, None)
+        elif c == "+":
+            self.add_token(tokens.PLUS, None)
+        elif c == ":":
+            self.add_token(tokens.COLON, None)
+        elif c == ";":
+            self.add_token(tokens.SEMICOLON, None)
+        elif c == "*":
+            self.add_token(tokens.STAR, None)
         elif c == "!":
             if self.match("="):
                 self.add_token(tokens.BANG_EQUAL, None)
@@ -72,18 +85,23 @@ class Scanner():
             if self.match("="):
                 self.add_token(tokens.GREATER_EQUAL, None)
             else:
-                self.add_token(tokens.GREATER)
+                self.add_token(tokens.GREATER, None)
         elif c == "/":
             if self.match("/"):
-                while (not self.is_at_end() and self.peek() != "\n"):
+                while not self.is_at_end() and self.peek() != "\n":
                     self.advance()
             else:
                 self.add_token(tokens.SLASH, None)
-        elif c == " " or c == "\t" or c == "\r": pass
-        elif c == "\n": self.line += 1
-        elif c == '"': self.string()
-        elif c.isdigit(): self.number()
-        elif self.is_alpha(c): self.identifier()
+        elif c == " " or c == "\t" or c == "\r":
+            pass
+        elif c == "\n":
+            self.line += 1
+        elif c == '"':
+            self.string()
+        elif c.isdigit():
+            self.number()
+        elif self.is_alpha(c):
+            self.identifier()
         else:
             self.error(self.line, "Unexpected Character.")
 
@@ -144,7 +162,7 @@ class Scanner():
         return self.source[self.current]
 
     def peek_next(self):
-        if (self.current + 1 >= self.length): return "\0"
+        if self.current + 1 >= self.length: return "\0"
         return self.source[self.current + 1]
 
     def advance(self):
