@@ -1,10 +1,7 @@
 import tokens
-from expressions import Binary, Grouping, Literal, Unary
-
-
-class ParserError(Exception):
-    pass
-
+import expressions as Expr
+import statements as Stmt
+from errors import ParserError
 
 class Parser:
 
@@ -12,6 +9,15 @@ class Parser:
         self.tokens = tokens
         self.current = 0
         self.report = report
+
+    def parse(self):
+        statements = []
+        try:
+            while not self.is_at_end():
+                statements.append(self.declaration())
+        except ParserError:
+            return None
+        return statements
 
     def match(self, *token_types):
         for token_type in token_types:
@@ -38,21 +44,71 @@ class Parser:
     def previous(self):
         return self.tokens[self.current - 1]
 
-    def parse(self):
+    def declaration(self):
         try:
-            return self.expression()
+            if self.match(tokens.VAR): return  self.var_declaration()
+            return self.statement()
         except ParserError:
+            self.synchronize()
             return None
 
+    def var_declaration(self):
+        name = self.consume(tokens.IDENTIFIER, "Expect variable name.")
+        initializer = None
+        if self.match(tokens.EQUAL):
+            initializer = self.expression()
+
+        self.consume(tokens.SEMICOLON, "Expect ';' after statement")
+        return Stmt.Var(name, initializer)
+
+    def statement(self):
+        if self.match(tokens.PRINT):
+            return self.print_statement()
+        if self.match(tokens.LEFT_BRACE):
+            return self.block_statement()
+        return self.expression_statement()
+
+    def block_statement(self):
+        statements = []
+        while not self.check(tokens.RIGHT_BRACE) and not self.is_at_end():
+            statements.append(self.declaration())
+
+        self.consume(tokens.RIGHT_BRACE, "Expect '}' at end of block.")
+        return Stmt.Block(statements)
+
+    def expression_statement(self):
+        expr = self.expression()
+        self.consume(tokens.SEMICOLON, "Expect a ';' at end of statement.")
+        return Stmt.Expression(expr)
+
+    def print_statement(self):
+        value = self.expression()
+        self.consume(tokens.SEMICOLON, "Expect a ';' at end of statement.")
+        return Stmt.Print(value)
+
     def expression(self):
-        return self.equality()
+        return self.assignment()
+
+    def assignment(self):
+        expr = self.equality()
+
+        if self.match(tokens.EQUAL):
+            equals = self.previous()
+            if type(expr) is not Expr.Variable:
+                self.error(equals, "Invalid Assignment Target")
+
+            value = self.assignment()
+            name = expr.name
+            return Expr.Assign(name, value)
+
+        return expr
 
     def equality(self):
         expr = self.comparison()
         while self.match(tokens.BANG_EQUAL, tokens.EQUAL_EQUAL):
             operator = self.previous()
             right = self.comparison()
-            expr = Binary(left=expr, operator=operator, right=right)
+            expr = Expr.Binary(left=expr, operator=operator, right=right)
 
         return expr
 
@@ -64,7 +120,7 @@ class Parser:
                          tokens.LESS_EQUAL):
             operator = self.previous()
             right = self.term()
-            expr = Binary(left=expr, operator=operator, right=right)
+            expr = Expr.Binary(left=expr, operator=operator, right=right)
 
         return expr
 
@@ -73,7 +129,7 @@ class Parser:
         while self.match(tokens.PLUS, tokens.MINUS):
             operator = self.previous()
             right = self.factor()
-            expr = Binary(left=expr, operator=operator, right=right)
+            expr = Expr.Binary(left=expr, operator=operator, right=right)
 
         return expr
 
@@ -82,7 +138,7 @@ class Parser:
         while self.match(tokens.STAR, tokens.SLASH):
             operator = self.previous()
             right = self.unary()
-            expr = Binary(left=expr, operator=operator, right=right)
+            expr = Expr.Binary(left=expr, operator=operator, right=right)
 
         return expr
 
@@ -90,25 +146,28 @@ class Parser:
         if self.match(tokens.MINUS, tokens.BANG):
             operator = self.previous()
             right = self.unary()
-            return Unary(operator=operator, right=right)
+            return Expr.Unary(operator=operator, right=right)
 
         return self.primary()
 
     def primary(self):
         if self.match(tokens.FALSE):
-            return Literal(False)
+            return Expr.Literal(False)
         if self.match(tokens.TRUE):
-            return Literal(True)
+            return Expr.Literal(True)
         if self.match(tokens.NIL):
-            return Literal(None)
+            return Expr.Literal(None)
 
         if self.match(tokens.NUMBER, tokens.STRING):
-            return Literal(self.previous().literal)
+            return Expr.Literal(self.previous().literal)
+
+        if self.match(tokens.IDENTIFIER):
+            return Expr.Variable(self.previous())
 
         if self.match(tokens.LEFT_PAREN):
             expr = self.expression()
             self.consume(tokens.RIGHT_PAREN, "Expect ')' after expression")
-            return Grouping(expr)
+            return Expr.Grouping(expr)
 
         raise self.error(self.peek(), "Expect expression.")
 

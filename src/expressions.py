@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from tokens import Token
 import typing
 
@@ -41,3 +42,20 @@ class Unary(Expr):
 
     def accept(self, visitor):
         return visitor.visit_unary_expr(self)
+
+
+@dataclass
+class Variable(Expr):
+    name: Token
+
+    def accept(self, visitor):
+        return visitor.visit_variable_expr(self)
+
+
+@dataclass
+class Assign(Expr):
+    name: Token
+    value: Expr
+
+    def accept(self, visitor):
+        return visitor.visit_assign_expr(self)
