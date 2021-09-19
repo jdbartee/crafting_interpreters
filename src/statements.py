@@ -9,7 +9,7 @@ class Stmt:
         raise NotImplemented
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Expression(Stmt):
     expression: Expr
 
@@ -17,7 +17,7 @@ class Expression(Stmt):
         return visitor.visit_expression_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Print(Stmt):
     expression: Expr
 
@@ -25,7 +25,7 @@ class Print(Stmt):
         return visitor.visit_print_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Var(Stmt):
     name: tokens.Token
     initializer: Expr
@@ -34,7 +34,7 @@ class Var(Stmt):
         return visitor.visit_var_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Block(Stmt):
     statements: [Stmt]
 
@@ -42,7 +42,7 @@ class Block(Stmt):
         return visitor.visit_block_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class If(Stmt):
     condition: Expr
     then_branch: Stmt
@@ -52,7 +52,7 @@ class If(Stmt):
         return visitor.visit_if_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class While(Stmt):
     condition: Expr
     body: Stmt
@@ -61,7 +61,7 @@ class While(Stmt):
         return visitor.visit_while_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Function(Stmt):
     name: tokens.Token
     params: [tokens.Token]
@@ -71,7 +71,7 @@ class Function(Stmt):
         return visitor.visit_function_stmt(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Return(Stmt):
     keyword: tokens.Token
     value: Expr

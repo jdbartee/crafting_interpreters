@@ -9,7 +9,7 @@ class Expr:
         raise NotImplemented
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Binary(Expr):
     left: Expr
     operator: Token
@@ -19,7 +19,7 @@ class Binary(Expr):
         return visitor.visit_binary_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Grouping(Expr):
     expression: Expr
 
@@ -27,7 +27,7 @@ class Grouping(Expr):
         return visitor.visit_grouping_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Literal(Expr):
     value: typing.Any
 
@@ -35,7 +35,7 @@ class Literal(Expr):
         return visitor.visit_literal_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Unary(Expr):
     operator: Token
     right: Expr
@@ -44,7 +44,7 @@ class Unary(Expr):
         return visitor.visit_unary_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Variable(Expr):
     name: Token
 
@@ -52,7 +52,7 @@ class Variable(Expr):
         return visitor.visit_variable_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Assign(Expr):
     name: Token
     value: Expr
@@ -61,13 +61,13 @@ class Assign(Expr):
         return visitor.visit_assign_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Logical(Binary):
     def accept(self, visitor):
         return visitor.visit_logical_expr(self)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Call(Expr):
     callee: Expr
     paren: Token

@@ -5,6 +5,8 @@ from parser import Parser
 from interpreter import Interpreter
 from ast_printer import AstPrinter
 import tokens
+from resolver import Resolver
+
 
 class Lox:
 
@@ -49,6 +51,12 @@ class Lox:
 
         if self.had_error:
             return
+
+        resolver = Resolver(self.interpreter, self.parser_error)
+        resolver.resolve(*statements)
+
+        if self.had_error:
+            return
         self.interpreter.interpret(statements)
 
     def lexer_error(self, line, message):
@@ -56,7 +64,7 @@ class Lox:
 
     def parser_error(self, token, message):
         if token.token_type == tokens.EOF:
-            self.report(token.line, "at end", message)
+            self.report(token.line, " at end", message)
         else:
             self.report(token.line, " at '" + token.lexeme + "' ", message)
 
