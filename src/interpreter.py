@@ -90,12 +90,26 @@ class Interpreter:
         return None
 
     def visit_class_stmt(self, stmt: Stmt.Class):
+        superclass = None
+        if stmt.superclass is not None:
+            superclass = self.evaluate(stmt.superclass)
+            if not isinstance(superclass, LoxClass):
+                raise LoxRuntimeError(stmt.superclass.name, "Superclass must be a class.")
+
         self.environment.define(stmt.name, None)
+
+        if stmt.superclass is not None:
+            self.environment = Environment(self.environment)
+            self.environment.define(tokens.Token(tokens.SUPER, 'super', 'super', -1), superclass)
+
         methods = {}
         for method in stmt.methods:
             function = LoxFunction(method, self.environment, is_initializer=method.name.lexeme == "init")
             methods[method.name.lexeme] = function
-        klass = LoxClass(stmt.name, methods)
+        klass = LoxClass(stmt.name, superclass, methods)
+
+        if superclass is not None:
+            self.environment = self.environment.parent
         self.environment.assign(stmt.name, klass)
         return None
 
@@ -255,6 +269,16 @@ class Interpreter:
 
     def visit_this_expr(self, expr: Expr.This):
         return self.lookup_variable(expr.keyword, expr)
+
+    def visit_super_expr(self, expr: Expr.Super):
+        distance = self.locals.get(expr)
+        superclass = self.environment.get_at(distance, expr.keyword)
+        obj = self.environment.get_at(distance - 1, tokens.Token(tokens.THIS, 'this', 'this', -1))
+        method = superclass.find_method(expr.method.lexeme)
+
+        if method is None:
+            raise LoxRuntimeError(expr.method, f"Undefined property {expr.method.lexeme}.")
+        return method.bind(obj)
 
     def is_truthy(self, value):
         return value is not None and value is not False
