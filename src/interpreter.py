@@ -45,6 +45,7 @@ class Interpreter:
         self.report = report
         self.global_env = Environment()
         self.environment = self.global_env
+        self.locals = {}
 
         self.global_env.define(tokens.Token(tokens.IDENTIFIER, "clock", "clock", -1), CLOCK)
         self.global_env.define(tokens.Token(tokens.IDENTIFIER, "print", "print", -1), PRINT)
@@ -60,7 +61,17 @@ class Interpreter:
         return stmt.accept(self)
 
     def evaluate(self, expr: Expr.Expr):
-        return expr.accept(self)
+        value = expr.accept(self)
+        return value
+
+    def lookup_variable(self, name: tokens.Token, expression: Expr):
+        distance = self.locals.get(expression)
+        value = None
+        if distance is not None:
+            value = self.environment.get_at(distance, name)
+        else:
+            value = self.global_env.get(name)
+        return value
 
     def visit_block_stmt(self, stmt: Stmt.Block):
         return self.execute_block(
@@ -77,6 +88,8 @@ class Interpreter:
             self.environment = prev_environment
         return None
 
+    def resolve(self, expr: Expr, depth: int):
+        self.locals[expr] = depth
 
     def visit_print_stmt(self, stmt: Stmt.Print):
         value = self.evaluate(stmt.expression)
@@ -178,11 +191,16 @@ class Interpreter:
 
     def visit_assign_expr(self, expr: Expr.Assign):
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+        distance = self.locals.get(expr)
+        if distance is not None:
+            self.environment.assign_at(distance, expr, value)
+        else:
+            self.global_env.assign(expr, value)
         return value
 
     def visit_variable_expr(self, expr: Expr.Variable):
-        return self.environment.get(expr.name)
+        value = self.lookup_variable(expr.name, expr)
+        return value
 
     def visit_logical_expr(self, expr: Expr.Logical):
         left = self.evaluate(expr.left)

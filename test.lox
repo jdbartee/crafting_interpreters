@@ -16,10 +16,21 @@ fun fib(n) {
     return _fib(n, 0, 1);
 }
 
-print(fib(121));
+print(fib(20));
 
 var end = clock();
 print(end - start);
 
 print(clock);
 print(fib);
+
+var a = "global";
+{
+    fun show_a() {
+        print(a);
+    }
+
+    show_a(); // Shows global
+    var a = "block";
+    show_a(); // still Shows global
+}
