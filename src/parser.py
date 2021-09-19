@@ -48,6 +48,7 @@ class Parser:
     def declaration(self):
         try:
             if self.match(tokens.VAR): return self.var_declaration()
+            if self.match(tokens.CLASS): return self.class_declaration()
             if self.match(tokens.FUN): return  self.fun_declaration("function")
             return self.statement()
         except ParserError:
@@ -62,6 +63,18 @@ class Parser:
 
         self.consume(tokens.SEMICOLON, "Expect ';' after statement")
         return Stmt.Var(name, initializer)
+
+    def class_declaration(self):
+        name = self.consume(tokens.IDENTIFIER, "Expect class name.")
+        self.consume(tokens.LEFT_BRACE, "Expect '{' before class body.")
+
+        methods = []
+        while not self.check(tokens.RIGHT_BRACE) and not self.is_at_end():
+            methods.append(self.fun_declaration("method"))
+
+        self.consume(tokens.RIGHT_BRACE, "Expect '}' after class body")
+
+        return Stmt.Class(name, methods)
 
     def fun_declaration(self, kind):
         name = self.consume(tokens.IDENTIFIER, f"Expect {kind} name.")
@@ -186,12 +199,15 @@ class Parser:
 
         if self.match(tokens.EQUAL):
             equals = self.previous()
-            if type(expr) is not Expr.Variable:
-                self.error(equals, "Invalid Assignment Target")
-
             value = self.assignment()
             name = expr.name
-            return Expr.Assign(name, value)
+
+            if isinstance(expr, Expr.Variable):
+                return Expr.Assign(name, value)
+            elif isinstance(expr, Expr.Get):
+                return Expr.Set(expr.object, name, value)
+
+            self.error(equals, "Invalid Assignment Target")
 
         return expr
 
@@ -268,6 +284,9 @@ class Parser:
         while True:
             if self.match(tokens.LEFT_PAREN):
                 expr = self.finish_call(expr)
+            elif self.match(tokens.DOT):
+                name = self.consume(tokens.IDENTIFIER, "Expect property name after '.")
+                expr = Expr.Get(expr, name)
             else:
                 break
 
@@ -292,10 +311,10 @@ class Parser:
             return Expr.Literal(True)
         if self.match(tokens.NIL):
             return Expr.Literal(None)
-
         if self.match(tokens.NUMBER, tokens.STRING):
             return Expr.Literal(self.previous().literal)
-
+        if self.match(tokens.THIS):
+            return Expr.This(self.previous())
         if self.match(tokens.IDENTIFIER):
             return Expr.Variable(self.previous())
 

@@ -78,3 +78,11 @@ class Return(Stmt):
 
     def accept(self, visitor):
         return visitor.visit_return_stmt(self)
+
+@dataclass(frozen=True, eq=True)
+class Class(Stmt):
+    name: tokens.Token
+    methods: [Function]
+
+    def accept(self, visitor):
+        return visitor.visit_class_stmt(self)

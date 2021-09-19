@@ -34,3 +34,32 @@ var a = "global";
     var a = "block";
     show_a(); // still Shows global
 }
+
+class Bacon {
+    eat() {
+        print("Crunch!");
+    }
+}
+var b = Bacon();
+b.eat();
+b.test = 2;
+print(b.test);
+
+class Test {
+  init(name) {
+    this.name = name;
+  }
+
+  greet() {
+    print("Hi, " + this.name);
+  }
+}
+
+var jd = Test("jd");
+var bobby = Test("bobby");
+var g = jd.greet;
+jd.name = "Not JD";
+g();
+bobby.greet();
+bobby.greet = g;
+bobby.greet();

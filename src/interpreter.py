@@ -4,7 +4,8 @@ from errors import LoxRuntimeError, Return
 
 import statements as Stmt
 import expressions as Expr
-from src.lox_function import LoxFunction
+from lox_function import LoxFunction
+from lox_class import LoxClass, LoxInstance
 
 
 class CLOCK:
@@ -86,6 +87,16 @@ class Interpreter:
                 self.execute(stmt)
         finally:
             self.environment = prev_environment
+        return None
+
+    def visit_class_stmt(self, stmt: Stmt.Class):
+        self.environment.define(stmt.name, None)
+        methods = {}
+        for method in stmt.methods:
+            function = LoxFunction(method, self.environment, is_initializer=method.name.lexeme == "init")
+            methods[method.name.lexeme] = function
+        klass = LoxClass(stmt.name, methods)
+        self.environment.assign(stmt.name, klass)
         return None
 
     def resolve(self, expr: Expr, depth: int):
@@ -227,6 +238,23 @@ class Interpreter:
             raise LoxRuntimeError(expr.paren, "Wrong number of arguments.")
 
         return callee.call(self, arguments)
+
+    def visit_get_expr(self, expr: Expr.Get):
+        obj = self.evaluate(expr.object)
+        if isinstance(obj, LoxInstance):
+            return obj.get(expr.name)
+
+        raise LoxRuntimeError(expr.name, "Only instances have properties")
+
+    def visit_set_expr(self, expr: Expr.Set):
+        obj = self.evaluate(expr.object)
+        if not isinstance(obj, LoxInstance):
+            raise LoxRuntimeError(expr.name, "Only instances have properties")
+        value = self.evaluate(expr.value)
+        obj.set(expr.name, value)
+
+    def visit_this_expr(self, expr: Expr.This):
+        return self.lookup_variable(expr.keyword, expr)
 
     def is_truthy(self, value):
         return value is not None and value is not False
