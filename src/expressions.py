@@ -75,3 +75,30 @@ class Call(Expr):
 
     def accept(self, visitor):
         return visitor.visit_call_expr(self)
+
+
+@dataclass(frozen=True, eq=True)
+class Get(Expr):
+    object: Expr
+    name: Token
+
+    def accept(self, visitor):
+        return visitor.visit_get_expr(self)
+
+
+@dataclass(frozen=True, eq=True)
+class Set(Expr):
+    object: Expr
+    name: Token
+    value: Expr
+
+    def accept(self, visitor):
+        return visitor.visit_set_expr(self)
+
+
+@dataclass(frozen=True, eq=True)
+class This(Expr):
+    keyword: Token
+
+    def accept(self, visitor):
+        return visitor.visit_this_expr(self)

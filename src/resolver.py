@@ -11,6 +11,7 @@ class Resolver:
         self.scopes = []
         self.report = report
         self.in_function = None
+        self.in_class = None
 
     def resolve(self, *statements):
         for statement in statements:
@@ -83,7 +84,27 @@ class Resolver:
         if self.in_function is None:
             self.report(stmt.keyword, "Can't return from top-level code.")
         if stmt.value is not None:
+            if self.in_function == 3:
+                self.resolve(stmt.keyword, "Can't return a value from an initializer.")
             self.resolve(stmt.value)
+
+    def visit_class_stmt(self, stmt: Stmt.Class):
+        enclosing = self.in_class
+        self.in_class = 1
+        self.declare(stmt.name)
+        self.define(stmt.name)
+
+        self.begin_scope()
+        self.scopes[-1]['this'] = True
+
+        for method in stmt.methods:
+            declaration = 2
+            if method.name.lexeme == "init":
+                declaration = 3
+            self.resolve_function(method, declaration)
+
+        self.end_scope()
+        self.in_class = enclosing
 
     def visit_var_stmt(self, stmt: Stmt.Var):
         self.declare(stmt.name)
@@ -132,5 +153,17 @@ class Resolver:
             print(self.scopes[-1])
             raise e
 
-
         self.resolve_local(expr, expr.name)
+
+    def visit_get_expr(self, expr: Expr.Get):
+        self.resolve(expr.object)
+
+    def visit_set_expr(self, expr: Expr.Set):
+        self.resolve(expr.value)
+        self.resolve(expr.object)
+
+    def visit_this_expr(self, expr: Expr.This):
+        if self.in_class is None:
+            self.report(expr.keyword, "Can't use 'this' outside of a class")
+            return None
+        self.resolve_local(expr, expr.keyword)
