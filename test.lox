@@ -63,3 +63,22 @@ g();
 bobby.greet();
 bobby.greet = g;
 bobby.greet();
+
+class A {
+    method() {
+        print("A Method");
+    }
+}
+
+class B < A {
+    method() {
+        print("B Method");
+    }
+    test() {
+        super.method();
+    }
+}
+
+class C < B {}
+
+C().test();

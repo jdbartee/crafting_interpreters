@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from expressions import Expr
+from expressions import Expr, Variable
 import tokens
 import typing
 
@@ -82,6 +82,7 @@ class Return(Stmt):
 @dataclass(frozen=True, eq=True)
 class Class(Stmt):
     name: tokens.Token
+    superclass: Variable
     methods: [Function]
 
     def accept(self, visitor):

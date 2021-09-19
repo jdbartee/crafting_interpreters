@@ -94,6 +94,16 @@ class Resolver:
         self.declare(stmt.name)
         self.define(stmt.name)
 
+        if stmt.superclass is not None:
+            if stmt.name.lexeme == stmt.superclass.name.lexeme:
+                self.report(stmt.superclass.name, "A class can't inherit from itself.")
+            self.in_class = 2
+            self.resolve(stmt.superclass)
+
+        if stmt.superclass is not None:
+            self.begin_scope()
+            self.scopes[-1]['super'] = True
+
         self.begin_scope()
         self.scopes[-1]['this'] = True
 
@@ -104,6 +114,10 @@ class Resolver:
             self.resolve_function(method, declaration)
 
         self.end_scope()
+
+        if stmt.superclass is not None:
+            self.end_scope()
+
         self.in_class = enclosing
 
     def visit_var_stmt(self, stmt: Stmt.Var):
@@ -166,4 +180,12 @@ class Resolver:
         if self.in_class is None:
             self.report(expr.keyword, "Can't use 'this' outside of a class")
             return None
+        self.resolve_local(expr, expr.keyword)
+
+    def visit_super_expr(self, expr: Expr.Super):
+        if self.in_class is None:
+            self.report(expr.keyword, "Can't use 'super' outside of a class.")
+        if self.in_class != 2:
+            self.report(expr.keyword, "Can't use 'super' in a class with no superclass.")
+
         self.resolve_local(expr, expr.keyword)

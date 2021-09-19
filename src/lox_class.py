@@ -3,8 +3,9 @@ from lox_function import LoxFunction
 from tokens import Token
 
 class LoxClass:
-    def __init__(self, name: Token, methods):
+    def __init__(self, name: Token, superclass, methods):
         self.name = name
+        self.superclass = superclass
         self.methods = methods
 
     def to_string(self):
@@ -24,7 +25,10 @@ class LoxClass:
         return 0
 
     def find_method(self, name):
-        return self.methods.get(name)
+        method = self.methods.get(name)
+        if method is None and self.superclass is not None:
+            return self.superclass.find_method(name)
+        return method
 
 
 class LoxInstance:
